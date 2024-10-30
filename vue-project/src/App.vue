@@ -240,7 +240,14 @@ const selectColor = (product, color) => {
 
 const cart = ref([]);
 const addToCart = (product) => {
-  if (product.selectedColor && product.selectedSize && product.quantity > 0) {
+  const existingItem = cart.value.find(item => item.id === product.id && item.color === product.selectedColor);
+  if (existingItem) {
+    if (existingItem.quantity < product.quantity) {
+      existingItem.quantity++;
+    } else {
+      alert("Hết hàng!");
+    }
+  } else if (product.selectedColor && product.selectedSize && product.quantity > 0) {
     cart.value.push({
       id: product.id,
       image: product.image,
@@ -256,10 +263,18 @@ const addToCart = (product) => {
 };
 
 const removeFromCart = (itemId) => {
-  const index = cart.value.findIndex(item => item.id === itemId);
-  if (index !== -1) {
-    cart.value.splice(index, 1);
+  const existingItem = cart.value.find(item => item.id === itemId);
+  if (existingItem) {
+    if (existingItem.quantity > 1) {
+      existingItem.quantity--;
+    } else {
+      const index = cart.value.findIndex(item => item.id === itemId);
+      if (index !== -1) {
+        cart.value.splice(index, 1);
+      }
+    }
   }
+
 };
 
 const totalCartValue = computed(() => {
