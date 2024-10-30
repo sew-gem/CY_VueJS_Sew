@@ -1,4 +1,4 @@
-<template>
+  <template>
   <!-- Header -->
   <header class="flex items-center justify-between p-4 bg-green-800 text-white rounded-lg mb-4 shadow-md">
     <h1 class="text-2xl font-bold">ShoeShop</h1>
@@ -7,7 +7,8 @@
         <li><a href="#" class="hover:text-green-400 mt-1">Trang chủ</a></li>
         <li>
           <a href="#" class="hover:text-green-400 flex" @click.prevent="toggleCart"> 
-            Giỏ hàng <img src="@/views/products_img/cart.svg" alt="cart" class="w-5 h-5 ml-2"/>
+            <span>Giỏ hàng</span> 
+            <img src="@/views/products_img/cart.svg" alt="cart" class="w-5 h-5 ml-2"/>
           </a>
         </li>
       </ul>
@@ -19,8 +20,8 @@
     <!-- Cart Popup -->
     <div class="text-green-700 w-full h-auto">
       <div v-if="isCartVisible" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div class="relative bg-white rounded-lg p-4 w-2/3 max-h-[80vh] overflow-y-auto">
-          <h2 class="text-xl font-bold mb-2">Giỏ hàng</h2>
+        <div class="relative bg-white rounded-lg py-4 px-14 w-2/3 max-h-[80vh] overflow-y-auto">
+          <h2 class="text-2xl font-bold my-4">Giỏ hàng</h2>
           <div class="ml-3 flex h-auto items-center ">
             <!-- btn close cart  -->
             <button 
@@ -42,11 +43,19 @@
                 <p class="mt-2 text-sm text-gray-500">số lượng: {{ item.quantity }}</p>
               </div>
               <span class="font-bold">{{ formatCurrency(item.price) }}</span>
+              <button 
+                @click="removeFromCart(item.id)"
+                class="text-green-700 hover:text-red-700 ml-4 text-sm"
+                title="Remove"
+              >remove</button>
             </li>
           </ul>
           <hr class="my-4">
-          <span>Tổng cộng: {{ cart.total }}</span>
-          <button class="mt-4 p-2 w-full bg-green-600 text-white rounded">Check out</button>
+          <span class="text-xl">
+            Tổng cộng: 
+            <span class="ml-2 font-bold">{{ formatCurrency(totalCartValue) }}</span>
+          </span>
+          <button class="my-4 p-2 w-full bg-green-600 text-white rounded">Check out</button>
         </div>
       </div>
     </div>
@@ -127,13 +136,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const products = ref([
   {
     id: 1,
     name: 'Nike',
-    price: 200000,
+    price: 200,
     releaseDate: '2024-02-01',
     isBestseller: true,
     brand: 'Nike',
@@ -146,7 +155,7 @@ const products = ref([
   {
     id: 2,
     name: 'Nike',
-    price: 200000,
+    price: 197,
     releaseDate: '2024-02-01',
     isBestseller: false,
     brand: 'Nike',
@@ -159,7 +168,7 @@ const products = ref([
   {
     id: 3,
     name: 'Nike',
-    price: 200000,
+    price: 180,
     releaseDate: '2024-02-01',
     isBestseller: true,
     brand: 'Nike',
@@ -167,12 +176,12 @@ const products = ref([
     colors: ['#FFFFFF', '#000000', '#FF0000', '#008000', '#FFFF0'],
     material: 'Synthetic',
     sizes: ['38', '39', '40', '41', '42', '43'],
-    quantity: 1
+    quantity: 1,
   },
   {
     id: 4,
     name: 'Nike',
-    price: 200000,
+    price: 300,
     releaseDate: '2024-02-01',
     isBestseller: false,
     brand: 'Nike',
@@ -180,7 +189,7 @@ const products = ref([
     colors: ['#FFFFFF', '#000000', '#FF0000', '#008000', '#FFFF0'],
     material: 'Synthetic',
     sizes: ['38', '39', '40', '41', '42', '43'],
-    quantity: 0
+    quantity: 1,
   },
 ]);
 
@@ -195,13 +204,13 @@ const mountOver = (productId, color) => {
     '#FF0000': 'src/views/products_img/product_red.jpg',
     '#008000': 'src/views/products_img/product_green.jpg',
   };
-  
   const product = products.value.find(p => p.id === productId);
   const newImage = colorImageMap[color] || product.image; 
   if (product) {
     product.image = newImage; 
   }
 };
+
 const mountLeave = (productId) => {
   const product = products.value.find(p => p.id === productId);
   if (!product.colorSelected) {
@@ -239,12 +248,23 @@ const addToCart = (product) => {
       price: product.price,
       color: product.selectedColor,
       size: product.selectedSize,
-      quantity: product.quantity,
+      quantity: 1,
     });
     product.quantity--; 
     console.log(`add to cart: ${JSON.stringify(cart.value)}`);
   }
 };
+
+const removeFromCart = (itemId) => {
+  const index = cart.value.findIndex(item => item.id === itemId);
+  if (index !== -1) {
+    cart.value.splice(index, 1);
+  }
+};
+
+const totalCartValue = computed(() => {
+  return cart.value.reduce((total, item) => total + (item.price * item.quantity), 0);
+});
 
 const isCartVisible = ref(false);
 const toggleCart = () => {
